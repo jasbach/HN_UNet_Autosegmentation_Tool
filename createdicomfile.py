@@ -9,7 +9,7 @@ import cv2
 from pydicom.dataset import Dataset, FileMetaDataset
 from pydicom.sequence import Sequence
 
-import evaluation_tool as eval_tool
+
 import output_postprocess
 
 """
@@ -342,44 +342,3 @@ def create_dicom(patient_data, UIDdict, structuresetdata,image_size=256,threshol
     ds.is_little_endian = True
     
     return ds
-
-if __name__ == "__main__":
-    testfolder = "F:\\DICOMdata\\RoswellData\\017_111"
-    listofimagepaths = []
-    heightlist = []
-    for root,dirs,files in os.walk(testfolder):
-        for name in files:
-            if name.endswith(".dcm"):
-                filepath = os.path.join(root,name)
-                listofimagepaths.append(filepath)
-                loadedfile = pydicom.read_file(filepath)
-                if loadedfile.Modality == "CT":
-                    heightlist.append(loadedfile.SliceLocation)
-    
-    ROIlist = ["BrachialPlexus","Brain","CochleaL","CochleaR","Larynx","ParotidL","ParotidR","SpinalCord",
-                     "BrainStem","SubmandibularL","SubmandibularR"]
-    ROInameconvert = {"BrachialPlexus":"Brachial Plexus","Brain":"Brain","CochleaL":"Cochlea L","CochleaR":"Cochlea R",
-                      "Larynx":"Larynx","ParotidL":"Parotid L","ParotidR":"Parotid R","SpinalCord":"Spinal Cord","BrainStem":"Brainstem",
-                      "SubmandibularL":"Submandibular L","SubmandibularR":"Submandibular R"}
-    structuresetdata = []
-    for ROI in ROIlist:
-        print("Beginning work on %s" % ROI)
-        if ROI == "BrachialPlexus":
-            bilateral = True
-        else:
-            bilateral = False
-        outputpath = "F:\\machine learning misc\\outputs\\local\\3D\\%s" % ROI  
-        AxialOutput = np.load(outputpath + "\\Axial_prediction_017_111.npy")
-        #CoronalOutput = np.load(outputpath + "\\Coronal_prediction_017_111.npy")
-        #SagittalOutput = np.load(outputpath + "\\Sagittal_prediction_017_111.npy")
-        MergedOutput = AxialOutput #*0.5 + CoronalOutput*0.25 + SagittalOutput*0.25               
-        MergedOutput = np.squeeze(MergedOutput) 
-        MergedOutput = eval_tool.output_postprocess(MergedOutput, bilateral)
-        
-        structuresetdata.append([ROInameconvert[ROI],MergedOutput,sorted(heightlist)])
-                
-    #structuresetdata is list of lists, each element will be [name,3Darray,heightlist]
-    
-    patient_data, UIDdict = gather_patient_data(testfolder)
-    ds = create_dicom(patient_data,UIDdict,structuresetdata,image_size=256)
-    ds.save_as(r'F:\testfolder\017_111structureset_from_codify.dcm', write_like_original=False)

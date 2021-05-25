@@ -22,11 +22,11 @@ from keras import optimizers
 
 import file_handling
 import createdicomfile
-from .model.UNet import Build_UNet
-from .model.losses import bce_dice_loss, dice_coef
+from model.UNet import Build_UNet
+from model.losses import bce_dice_loss, dice_coef
 
 
-patientfolder = "EXAMPLE FOLDER" #<--- Update this variable to the path to the folder that holds the patient study
+patientfolder = r"F:\DICOMdata\RoswellData\017_111" #<--- Update this variable to the path to the folder that holds the patient study
 
 if len(sys.argv) > 1:
     patientfolder = sys.argv[1] #if run in command line, allows path to folder to be passed as an argument to the script
@@ -82,4 +82,4 @@ patient_data,UIDdict = createdicomfile.gather_patient_data(filelist)
 structure_set = createdicomfile.create_dicom(patient_data,UIDdict,structuresetdata,image_size=256,threshold=0.33)
 
 filename = "%s_DeepLearning_RTSTRUCT.dcm" % patient_data["PatientID"]
-structure_set.save_as(os.path.join(wd, filename), write_like_original=False)
+structure_set.save_as(os.path.join(wd, filename), write_like_original=False) #saves to working directory
