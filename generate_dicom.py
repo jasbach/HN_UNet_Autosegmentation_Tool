@@ -17,7 +17,7 @@ logger.setLevel(level="WARNING")
 
 import keras
 import tensorflow as tf
-import numpy
+import numpy as np
 from keras import optimizers
 
 import file_handling

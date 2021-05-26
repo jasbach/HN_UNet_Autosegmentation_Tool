@@ -14,7 +14,7 @@ import pydicom
 import numpy as np
 import cv2
 
-def get_files(folderpath):
+def get_files(folderpath,get_rtstruct=False):
     """
     Parameters
     ----------
@@ -30,6 +30,7 @@ def get_files(folderpath):
     filelist = []
     totalfiles = 0
     skippedfiles = 0
+    structureset = None
     for root, dirs, files in os.walk(folderpath): #we want to extract every dicom file in directory
         for name in files:
             if name.endswith(".dcm"):
@@ -37,13 +38,20 @@ def get_files(folderpath):
                 dicomfile = pydicom.read_file(filepath) #will load each DICOM file in turn
                 if dicomfile.Modality == "CT":
                     filelist.append(dicomfile)
+                elif dicomfile.Modality == "RTSTRUCT":
+                    if not isinstance(structureset,type(None)):
+                        raise Exception("Invalid input data files - multiple structure sets in %s." % root)
+                    structureset = dicomfile
                 else:
                     skippedfiles += 1
             else:
                 skippedfiles += 1
             totalfiles += 1
     logger.info("Input folder processed. %d total files were found. %d were invalid and were not retained.",totalfiles,skippedfiles)
-    return filelist
+    if get_rtstruct == True:
+        return filelist,structureset
+    else:
+        return filelist
 
 def build_array(filelist,image_size=256,pixel_size=1.0):
     """
@@ -71,6 +79,8 @@ def build_array(filelist,image_size=256,pixel_size=1.0):
     heightlist = []
     array = []
     for ds in filelist:
+        if ds.SliceLocation != ds.ImagePositionPatient[2]:
+            logger.warning("File detected where SliceLocation does not match ImagePositionPatient coordinate. Double check results to ensure contour alignment.")
         image = process_image(ds,image_size,pixel_size)
         sliceheight = round(ds.SliceLocation * 4) / 4
         holding_dict[sliceheight] = image
@@ -79,6 +89,28 @@ def build_array(filelist,image_size=256,pixel_size=1.0):
         array.append(holding_dict[height])
     final_array = np.asarray(array)
     return final_array, heightlist
+
+def get_contour_points(ss,ref_num):
+    list_of_points = []
+    for contour in ss.ROIContourSequence:
+        if contour.ReferencedROINumber == ref_num:
+            for element in contour.ContourSequence:
+                num_points = element.NumberOfContourPoints
+                coords = np.reshape(element.ContourData,(num_points,3))
+                try:
+                    all_points = np.concatenate((all_points,coords),axis=0)
+                except NameError:
+                    all_points = np.copy(coords)
+    return all_points
+            
+def build_mask(contourpoints,heightlist,imagesize,pixelsize):
+    if pixelsize != 1:
+        raise Exception("Script not currently equipped for different pixel sizes.")
+    maskarray = np.zeros((heightlist,imagesize,imagesize))
+    for i,height in enumerate(heightlist):
+        points_to_map = contourpoints[np.where(contourpoints[:,2]==height)][:,0:2]
+        maskarray[i] = cv2.fillPoly(maskarray[i],pts=points_to_map,color=(1))
+    return maskarray
 
 def process_image(file, image_size=256, pixel_size=1.0):
     """
@@ -153,3 +185,45 @@ def pad_image(img,image_size):    #function used to expand image to standardized
     padsize = round((image_size - oldsize) / 2)
     newimage[padsize:padsize+oldsize,padsize:padsize+oldsize] = img
     return newimage
+
+def check_patient_validity(ss, contour):
+    """
+    Parameters
+    ----------
+    structureset : pydicom FileDataset
+        Structure set file dataset
+    contourlist : str or list
+        Name of contour you want to check for
+
+    Returns
+    -------
+    validpatient : boolean
+        True/false as to whether patient has valid contour data for the chosen contour.
+
+    """
+    validpatient = False
+    ref_num = 0
+    
+    if not isinstance(contour,list):
+        contour = [contour]
+    
+    for item in ss.StructureSetROISequence:
+        if item.ROIName in contour:
+            if ref_num != 0:
+                raise Exception("Multiple valid contours from provided list, revise list.")
+            ref_num = item.ROINumber
+    if ref_num == 0:
+        for item in ss.RTROIObservationsSequence:
+            if item.ROIObservationLabel in contour:
+                if ref_num != 0:
+                    raise Exception("Multiple valid contours from provided list, revise list.")
+                ref_num = item.ReferencedROINumber
+    if ref_num == 0:
+        return validpatient,int(ref_num)
+    for item in ss.ROIContourSequence:
+        if item.ReferencedROINumber == ref_num:
+            if hasattr(item,'ContourSequence'):
+                if len(item.ContourSequence) > 0:
+                    validpatient = True
+            
+    return validpatient, ref_num
