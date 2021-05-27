@@ -19,6 +19,14 @@ Note that only the following organs are segmented by this tool:
 - Larynx
 - Spinal Cord
 
-At this time, the tools for running new training iterations on the UNet structure are not available in the repository, but I do plan to add them soon once I've cleaned up the files a little bit.
+A script for running your own training iterations on the same UNet architecture is also provided: **training.py**
+
+This script cannot be run command-line as packaged, you'll need to open it in an interpreter and modify the settings as needed. Both training and predicting depend on the support scripts for data handling - please download the entire repository into one location to ensure proper functionality.
+
+CURRENT LIMITATIONS OF TRAINING TOOLS:
+- Configured only for 256x256 images with pixel size 1mm by 1mm. Skeleton is there to support other configurations, I need to finalize the code for it first.
+- Only can be used for CT images
+- Requires good alignment of images (consistent slice thickness, contour data aligning with SliceLocation, etc). I've tried to build flags and errors in as many places as I could think of to catch issues if feed data needs cleaning. Future releases will be made more robust in this sense.
+- Limited to CT arrangement where coordinates origin is in the center of each image. Can't map contours correctly otherwise. This will be updated in a future release.
 
 Feel free to reach out to me at johnasba@buffalo.edu with any feedback.
