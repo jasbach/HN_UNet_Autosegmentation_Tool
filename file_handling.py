@@ -90,8 +90,7 @@ def build_array(filelist,image_size=256,pixel_size=1.0):
     final_array = np.asarray(array)
     return final_array, heightlist
 
-def get_contour_points(ss,ref_num):
-    list_of_points = []
+def get_contour_points(ss,ref_num,image_size=256,pixel_size=1.0):
     for contour in ss.ROIContourSequence:
         if contour.ReferencedROINumber == ref_num:
             for element in contour.ContourSequence:
@@ -101,15 +100,20 @@ def get_contour_points(ss,ref_num):
                     all_points = np.concatenate((all_points,coords),axis=0)
                 except NameError:
                     all_points = np.copy(coords)
+    all_points[:,0] = all_points[:,0] + int(image_size/2)
+    all_points[:,1] = all_points[:,1] + int(image_size/2)
     return all_points
             
 def build_mask(contourpoints,heightlist,imagesize,pixelsize):
     if pixelsize != 1:
         raise Exception("Script not currently equipped for different pixel sizes.")
-    maskarray = np.zeros((heightlist,imagesize,imagesize))
+    maskarray = np.zeros((len(heightlist),imagesize,imagesize))
     for i,height in enumerate(heightlist):
         points_to_map = contourpoints[np.where(contourpoints[:,2]==height)][:,0:2]
-        maskarray[i] = cv2.fillPoly(maskarray[i],pts=points_to_map,color=(1))
+        if len(points_to_map) < 4:
+            continue
+        #points_to_map = np.asarray(points_to_map,dtype=np.int32)
+        maskarray[i] = cv2.fillPoly(maskarray[i],np.int32([points_to_map]),color=(1))
     return maskarray
 
 def process_image(file, image_size=256, pixel_size=1.0):
@@ -134,6 +138,10 @@ def process_image(file, image_size=256, pixel_size=1.0):
     """
     if file.Modality != "CT":
         raise Exception("Invalid modality.")
+        
+    if round(file.PixelSpacing[0] * file.Rows) != -round(file.ImagePositionPatient[0]*2):
+        logger.warning(" CT Image coordinate origin not at center of image! Contours will not map correctly.")
+        raise Exception("Script cannot process origins not in center of image, affine transformation required.")
     
     image = file.pixel_array.astype(np.int16)
     slope = file.RescaleSlope
@@ -227,3 +235,12 @@ def check_patient_validity(ss, contour):
                     validpatient = True
             
     return validpatient, ref_num
+
+def full_sequence(patientpath,contour,imagesize=256,pixelsize=1.0):
+    filelist, ss = get_files(patientpath,get_rtstruct=True)
+    imagearray, heightlist = build_array(filelist,imagesize,pixelsize)
+    validpatient, ref_num = check_patient_validity(ss,contour)
+    contourpoints = get_contour_points(ss,ref_num)
+    maskarray = build_mask(contourpoints,heightlist,imagesize,pixelsize)
+    return imagearray, maskarray
+    

@@ -33,11 +33,11 @@ Each subdirectory should have every CT image file and the RTSTRUCT file to gener
 #==============================================================
 # User-defined variables that determine the training settings
 #==============================================================
-CONTOUR = "Brain"
-MAINROOTPATH = "F:/DICOMData/examplefolder" #Path to the root data directory for training data 
+CONTOUR = "Larynx"
+MAINROOTPATH = "F:/DICOMdata/RoswellData" #Path to the root data directory for training data 
 
 VAL_SPLIT = 0.2
-RANDOM_VAL = True
+RANDOM_VAL = True #if False, takes first X patients as validation set. if True, selects patients randomly for val set
 
 IMAGE_SIZE = 256
 PIXEL_SIZE = 1.0 #current version not equipped for varying pixel size
@@ -110,6 +110,7 @@ image_generator = image_datagen.flow(inputdata, batch_size=BATCH_SIZE, seed=seed
 mask_generator = mask_datagen.flow(inputlabel, batch_size=BATCH_SIZE, seed=seed)
 train_generator = zip(image_generator, mask_generator)
 
+sys.exit()
 #==============================================================
 #           Build and compile the UNet itself
 #==============================================================
