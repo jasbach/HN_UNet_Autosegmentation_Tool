@@ -110,7 +110,6 @@ image_generator = image_datagen.flow(inputdata, batch_size=BATCH_SIZE, seed=seed
 mask_generator = mask_datagen.flow(inputlabel, batch_size=BATCH_SIZE, seed=seed)
 train_generator = zip(image_generator, mask_generator)
 
-sys.exit()
 #==============================================================
 #           Build and compile the UNet itself
 #==============================================================
