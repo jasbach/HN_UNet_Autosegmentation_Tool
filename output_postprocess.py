@@ -73,14 +73,31 @@ def simple_z_smoothing(returned_array):
     return smoothed_array
 
 def height_prior(binary_array,maxheight):
+    """
+    Function to constrain organ prediction to a set number of slices.
+    Uses a sliding window to select the slices with the most organ volume in
+    applying this constraint.
+    
+    Parameters
+    ----------
+    binary_array : np.array
+        Array representing binarized output of the CNN
+    maxheight : int
+        Maximum number of slices organ is permitted to occupy.
+    
+    Returns
+    -------
+    bound_array : np.array
+        Constrained array limited to provided number of slices.
+    """
     compressed = np.zeros(len(binary_array))
     for i in range(len(binary_array)):
-        compressed[i] = np.sum(binary_array[i])
+        compressed[i] = np.sum(binary_array[i]) #creates 1D array of sum of each slice
     index = 0
     maxwindow = 0
     maxindex = 0
     while index+maxheight < len(compressed):
-        if np.sum(compressed[index:index+maxheight]) > maxwindow:
+        if np.sum(compressed[index:index+maxheight]) > maxwindow: #applies sliding window
             maxwindow = np.sum(compressed[index:index+maxheight])
             maxindex = index
         index += 1
@@ -89,21 +106,37 @@ def height_prior(binary_array,maxheight):
     return bound_array
 
 def scrap_stray(binary_array):
-    compressed = np.zeros(len(binary_array))
+    """
+    Function to remove sections of organ prediction that are noncontiguous
+    in the AXIAL direction. This is a parallel function to the previous
+    scrub_output() function, but in axial direction instead of transverse.
+    
+    Parameters
+    ----------
+    binary_array : np.array
+        Numpy array representing the binarized output of the CNN
+        
+    Returns
+    -------
+    clean_array : np.array
+        Numpy array representing organ volume with stray patches removed. This
+        will be a single contiguous volume for the organ.
+    """
+    compressed = np.zeros(len(binary_array)) #initialize array to map to each slice of array
     for i in range(len(binary_array)):
-        compressed[i] = np.sum(binary_array[i])
-    idx = np.squeeze(np.argwhere(compressed))
-    chunks = np.split(compressed[idx],np.where(np.diff(idx)!=1)[0]+1)
+        compressed[i] = np.sum(binary_array[i]) #map each slice's total sum into 1D array
+    idx = np.squeeze(np.argwhere(compressed)) #returns indices of nonzero - these are the "live" slices
+    chunks = np.split(compressed[idx],np.where(np.diff(idx)!=1)[0]+1) #divides indices into groups according to axial contiguity
     chunkvals = np.zeros(len(chunks))
     for i in range(len(chunks)):
-        chunkvals[i] = np.sum(chunks[i])
-    biggest = chunks[np.argmax(chunkvals)]
+        chunkvals[i] = np.sum(chunks[i]) #sums the total size of prediction represented on chunks of slices by total voxel count
+    biggest = chunks[np.argmax(chunkvals)] #selects the largest single region
     N = len(biggest)
-    possibles = np.where(compressed == biggest[0])[0]
-    for p in possibles:
+    possibles = np.where(compressed == biggest[0])[0] #finds slices that match the sum of the expected sum start-point in the largest region
+    for p in possibles: #loops through these possible start points to figure out which matches the true largest region via sum-matching
         if np.all(compressed[p:p+N] == biggest):
             startindex = p
     clean_array = np.zeros(binary_array.shape)
-    clean_array[startindex:startindex+N] = binary_array[startindex:startindex+N]
+    clean_array[startindex:startindex+N] = binary_array[startindex:startindex+N] #returns to 'true array' and only retains largest region
     return clean_array
         
