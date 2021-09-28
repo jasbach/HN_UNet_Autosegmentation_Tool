@@ -1,0 +1,22 @@
+﻿
+{% extends "layout.html" %}
+{% block title %}Main Page{% endblock %}
+{% block content %}
+
+<p>
+    Hello {{ username }}. Use the form below to select DICOM image files for contour creation.
+    <br />
+    As a reminder, only <b>head and neck</b> studies can be processed at this time.
+</p>
+<form action="/upload_files" method="post" enctype="multipart/form-data">
+    <div>
+        <label for="files">Select DICOM image files:</label>
+        <input type="file" id="files" name="dicom_files"
+                accept=".dcm" multiple>
+    </div>
+    <div>
+        <button type="submit">Upload files to server.</button>
+    </div>
+    
+</form>
+{% endblock %}

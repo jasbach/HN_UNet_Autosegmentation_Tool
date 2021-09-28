@@ -1,0 +1,37 @@
+﻿body {
+    background-image: url("AI.png");
+    background-size: cover;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-color: #cccccc;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+h1 {
+    color: lightgrey;
+    background-image: radial-gradient(blue,darkblue);
+    text-align: center;
+    border: 2px solid black;
+    padding: 30px;
+}
+
+h2 {
+    color: red;
+}
+
+h3 {
+    color: dimgrey;
+}
+
+p {
+    color: white;
+}
+
+ul {
+    color: white;
+}
+
+form {
+    color: white;
+}

@@ -1,0 +1,23 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Your first HTML form</title>
+</head>
+
+<body>
+    <form action="/contour" method="post" enctype="multipart/form-data">
+     
+        <div>
+            <label for="name">Select DICOM image files:</label>
+            <input type="file" id="files" name="dicom_files"
+                   accept=".dcm" multiple>
+        </div>
+        <div>
+            <button type="submit">Submit for contour creation</button>
+        </div>
+    
+    </form>
+</body>
+</html>

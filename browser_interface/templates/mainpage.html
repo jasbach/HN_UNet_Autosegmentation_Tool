@@ -1,0 +1,42 @@
+﻿
+{% extends "layout.html" %}
+{% block title %}Main Page{% endblock %}
+{% block content %}
+<h2>
+    Internal Use Only
+</h2>
+<h3>
+    Not Approved for Clinical Use
+</h3>
+<p>
+    This web application is a prototype front end interface for utilizing <b>convolutional neural networks (deep learning)</b> for automatic generation of DICOM-compliant structure set file. <br />
+    Current support is for head and neck CT studies. The workflow will generate contours for the following OAR: <br />
+    <ul>
+        <li>Brain</li>
+        <li>Brainstem</li>
+        <li>Spinal Cord</li>
+        <li>Parotid Glands (left and right)</li>
+        <li>Cochlea (left and right)</li>
+        <li>Submandibular Glands (left and right)</li>
+        <li>Larynx</li>
+        <li>Brachial Plexus</li>
+    </ul>
+</p>
+<form action="/login" method="post" enctype="multipart/form-data">
+     
+    <div>
+        <label for="username">Please enter a unique user ID (used to organize server file storage):</label>
+        <input type="text" id="username" name="username" />
+    </div>
+    <div>
+        <input type="radio" id="new" name="process" value="new" />
+        <label for="new">Create new structure set session.</label><br />
+        <input type="radio" id="last" name="process" value="last" />
+        <label for="last">Retrieve last structure set.</label><br />
+    </div>
+    <div>
+        <button type="submit">Submit</button>
+    </div>
+    
+</form>
+{% endblock %}

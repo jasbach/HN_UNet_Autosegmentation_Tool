@@ -1,0 +1,13 @@
+﻿{% extends "layout.html" %}
+{% block title %}Structure Set Complete{% endblock %}
+{% block content %}
+<p>
+    Sturcture set generated based off {{ number_of_files }} image files.
+</p>
+<form action="{{ url_for('download_redirect') }}" target="_blank" method="post" enctype="multipart/form-data">
+    <button type="submit">Download structure set file.</button>
+</form>
+<p>
+    <a href="{{ url_for('main_menu') }}">Return to main.</a>
+</p>
+{% endblock %}

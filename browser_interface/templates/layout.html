@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    {% block head %}
+    <link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}" />
+    <meta charset="utf-8" />
+    <title>{% block title %}{% endblock %}</title>
+    {% endblock %}
+</head>
+<body>
+    <div id="lead">
+        <h1>
+            Deep Learning Head and Neck Automatic Contour Generation Tool
+        </h1>
+    </div>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class=flashes>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    <div id="content">{% block content %}{% endblock %}</div>
+    <div id="footer">
+        {% block footer %}
+        <p style="font-size:12px">
+            Neural network implementation using Python 3.7 - open source deep learning packages TensorFlow/Keras used to facilitate.
+        </p></n></n>
+        <p>
+            NOT FOR PRODUCTION USE
+        </p>
+        {% endblock %}
+    </div>
+</body>
+</html>

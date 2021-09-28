@@ -1,0 +1,6 @@
+tensorflow==2.3.0
+pydicom==2.1.2
+numpy==1.19.2
+Keras==2.4.3
+opencv-python==4.5.1.48
+Flask=1.1.2
