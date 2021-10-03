@@ -12,7 +12,8 @@ $env:FLASK_APP="app.py"
 flask run --without-threads
 
 
-Alternately, run this script in any Python IDE. Line 136 allows it to be run directly this way.
+Alternately, run this script in any Python IDE. 
+Final allows it to be run directly this way.
 """
 
 import os
@@ -24,7 +25,9 @@ from flask import Flask, render_template, request, flash, redirect, url_for, sen
 from werkzeug.utils import secure_filename
 
 import main_script
+#main_script handles all deep learning backend functions
 
+#==== Define settings referenced throughout the app ====
 app = Flask(__name__)
 app.secret_key = 'jessalee'
 UPLOAD_FOLDER = app.root_path + '\\uploadfiles'
@@ -36,17 +39,28 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['OUTPUT_FOLDER'] = OUTPUT_FOLDER
 
 def allowed_file(filename):
+    #function that checks to ensure only DICOM files are uploaded to the app
     return '.' in filename and \
         filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/')
 def main_menu():
+    #initial function call which returns the main page of the browser app
     return render_template('mainpage.html')
 
 @app.route('/login', methods=['GET','POST'])
 def user_redirect():
+    """
+    Receives username input (no constraints, any username is accepted) and
+    redefines the storage folders to be user-specific.
+    
+    No password protection is currently implemented, and no DICOM anonymization
+    exists.
+    """
+    
     if request.method == 'POST':
         if request.form['username'] == "":
+            #if user does not fill in the field, reset form
             flash('No username entered!')
             return redirect(url_for('main_menu'))
         app.config['USERNAME'] = request.form['username']
@@ -56,12 +70,24 @@ def user_redirect():
         print("Input Path:",app.config['UPLOAD_FOLDER'])
         print("Output Path:",app.config['OUTPUT_FOLDER'])
         if request.form['process'] == "new":
+            #process to generate a new set of contours
             return redirect(url_for('upload_files',username=app.config['USERNAME']))
         elif request.form['process'] == "last":
-            assert len(os.listdir(app.config['OUTPUT_FOLDER'])) == 1 #<---- need better system
-            for file in os.listdir(app.config['OUTPUT_FOLDER']):
-                app.config['FILENAME'] = file
-            return redirect(url_for('retrieve_ss',username=app.config['USERNAME'])) #<------build
+            #process to retrieve the last set generated
+            if not os.path.isdir(app.config['OUTPUT_FOLDER']):
+                #if the username is not in the records
+                flash("No previous files detected.")
+                return redirect(url_for('main_menu'))
+            
+            if len(os.listdir(app.config['OUTPUT_FOLDER'])) != 1:
+                #should only ever be one file in this folder, but in case something goes wrong
+                flash("No valid previous files detected.")
+                return redirect(url_for('main_menu'))
+            
+            app.config['FILENAME'] = os.listdir(app.config['OUTPUT_FOLDER'])[0]
+            #sends to the structure set download page
+            return redirect(url_for('retrieve_ss',username=app.config['USERNAME']))
+        
     return redirect(url_for('main_menu'))
 
 @app.route('/<username>/retrieve_ss', methods=['GET','POST'])
