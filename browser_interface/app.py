@@ -25,9 +25,9 @@ from flask import Flask, render_template, request, flash, redirect, url_for, sen
 from werkzeug.utils import secure_filename
 
 import main_script
-#main_script handles all deep learning backend functions
+# main_script handles all deep learning backend functions
 
-#==== Define settings referenced throughout the app ====
+# ==== Define settings referenced throughout the app ====
 app = Flask(__name__)
 app.secret_key = 'jessalee'
 UPLOAD_FOLDER = app.root_path + '\\uploadfiles'
@@ -39,13 +39,13 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['OUTPUT_FOLDER'] = OUTPUT_FOLDER
 
 def allowed_file(filename):
-    #function that checks to ensure only DICOM files are uploaded to the app
+    # function that checks to ensure only DICOM files are uploaded to the app
     return '.' in filename and \
         filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/')
 def main_menu():
-    #initial function call which returns the main page of the browser app
+    # initial function call which returns the main page of the browser app
     return render_template('mainpage.html')
 
 @app.route('/login', methods=['GET','POST'])
@@ -60,7 +60,7 @@ def user_redirect():
     
     if request.method == 'POST':
         if request.form['username'] == "":
-            #if user does not fill in the field, reset form
+            # if user does not fill in the field, reset form
             flash('No username entered!')
             return redirect(url_for('main_menu'))
         app.config['USERNAME'] = request.form['username']
@@ -70,22 +70,22 @@ def user_redirect():
         print("Input Path:",app.config['UPLOAD_FOLDER'])
         print("Output Path:",app.config['OUTPUT_FOLDER'])
         if request.form['process'] == "new":
-            #process to generate a new set of contours
+            # process to generate a new set of contours
             return redirect(url_for('upload_files',username=app.config['USERNAME']))
         elif request.form['process'] == "last":
-            #process to retrieve the last set generated
+            # process to retrieve the last set generated
             if not os.path.isdir(app.config['OUTPUT_FOLDER']):
-                #if the username is not in the records
+                # if the username is not in the records
                 flash("No previous files detected.")
                 return redirect(url_for('main_menu'))
             
             if len(os.listdir(app.config['OUTPUT_FOLDER'])) != 1:
-                #should only ever be one file in this folder, but in case something goes wrong
+                # should only ever be one file in this folder, but in case something goes wrong
                 flash("No valid previous files detected.")
                 return redirect(url_for('main_menu'))
             
             app.config['FILENAME'] = os.listdir(app.config['OUTPUT_FOLDER'])[0]
-            #sends to the structure set download page
+            # sends to the structure set download page
             return redirect(url_for('retrieve_ss',username=app.config['USERNAME']))
         
     return redirect(url_for('main_menu'))
@@ -102,9 +102,10 @@ def upload_files(username):
 
 @app.route('/upload_files', methods=['GET','POST'])
 def contour():
-    #main menu provides user space to upload files, these files will be passed to the contour method here
+    # main menu provides user space to upload files, these files will be passed to the contour method here
     if request.method == 'POST':
         if 'dicom_files' not in request.files:
+            # if no files are attached, reroute user to the main menu
             flash('No file part')
             return redirect(url_for('main_menu'))
         file = request.files['dicom_files']
@@ -113,16 +114,20 @@ def contour():
             return redirect(url_for('main_menu'))
         files = request.files
         
+        # if this is the first time a username is accessing the system, create
+        # new user-specific folders for them
         if not os.path.exists(app.config['UPLOAD_FOLDER']):
             os.mkdir(app.config['UPLOAD_FOLDER'])
         if not os.path.exists(app.config['OUTPUT_FOLDER']):
             os.mkdir(app.config['OUTPUT_FOLDER'])
         
-        for file in os.listdir(app.config['UPLOAD_FOLDER']): #ensure folders are empty
+        # empty the folders of any contents - system only allows storage of one instance at a time
+        for file in os.listdir(app.config['UPLOAD_FOLDER']):
             os.remove(os.path.join(app.config['UPLOAD_FOLDER'],file))
         for file in os.listdir(app.config['OUTPUT_FOLDER']):
             os.remove(os.path.join(app.config['OUTPUT_FOLDER'],file))
             
+        #filter the submitted files for name acceptability, save to server storage
         filelist = files.getlist('dicom_files')
         for file in filelist:
             if file and allowed_file(file.filename):
@@ -145,6 +150,10 @@ def contour():
                        
 @app.route('/create_ss',methods=['GET','POST'])
 def create_ss():
+    """
+    At this point, the files are staged in the upload folder. Process can now be
+    passed over to the main script, which handles the deep learning backend.
+    """
     main_script.generate_ss(app.config['UPLOAD_FOLDER'],app.config['OUTPUT_FOLDER'],app.config['USERNAME'])
     filename = "RS." + app.config['USERNAME'] + "-CNN.dcm"
     app.config['FILENAME'] = filename

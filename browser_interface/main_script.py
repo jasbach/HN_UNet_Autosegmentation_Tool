@@ -27,6 +27,7 @@ INPUT RECEIVED FROM BROWSER:
 
 def generate_ss(imagefolder,outputfolder,username):
     
+    # standard set of thresholds that perform best on validation data
     thresholds = {"BrainStem":0.2, "CochleaL":0.2, "CochleaR":0.2,
                   "ParotidL":0.33, "ParotidR":0.33, "SubmandibularL":0.1,
                   "SubmandibularR":0.1,"BrachialPlexus":0.1, "Brain":0.66,
