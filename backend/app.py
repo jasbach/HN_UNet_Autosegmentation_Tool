@@ -18,6 +18,7 @@ Final allows it to be run directly this way.
 
 import os
 import datetime
+import threading
 
 import pydicom
 
@@ -168,4 +169,4 @@ def serve_ss(filename):
     return send_from_directory(app.config['OUTPUT_FOLDER'],filename=filename)
 
 if __name__ == '__main__':
-    app.run(threaded=False)
+    app.run()
