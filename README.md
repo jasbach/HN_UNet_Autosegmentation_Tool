@@ -1,3 +1,5 @@
+**Note**: This branch of the repository is retained to capture the state of the app at the time of publication of our manuscript in BMC Radiation Oncology. The only further updates to this branch will be bugfixes as they arise. Active development of the app will continue on other branches.
+
 # HN_UNet_Autosegmentation_Tool
  Accessible tool for using U-Net to run automatic segmentation on head and neck CT images for clinical use.
  
