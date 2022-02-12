@@ -17,9 +17,9 @@ function App(props) {
         Autosegmentation tool for head and neck
       </h1>
       <UploadForm />
-      <p>
+      <div>
         <AdvanceButton />
-      </p>
+      </div>
     </div>
 
   )
