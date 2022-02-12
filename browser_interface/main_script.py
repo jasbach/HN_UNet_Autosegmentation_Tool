@@ -43,7 +43,7 @@ def generate_ss(imagefolder,outputfolder,username):
         ROIlist = ["BrachialPlexus","Brain","CochleaL","CochleaR","Larynx","ParotidL","ParotidR","SpinalCord",
                      "BrainStem","SubmandibularL","SubmandibularR"]
         
-        weightspaths = {"Axial":"..//weights//Axial"}
+        weightspaths = {"Axial":"..//weights"}
     
     image_size = 256
     AxialModel = model.get_unet(image_size)
