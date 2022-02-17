@@ -127,13 +127,14 @@ def create_dicom(patient_data, UIDdict, structuresetdata,image_size=256,threshol
     
     GeneratedInstanceUID = '1.2.246.352.221.' + generate_random_UID() #generates random 39-digit UID
     
-    colordict = {"Brain":[0,0,198],"BrainStem":[251,216,151],"SpinalCord":[12,191,243],"ParotidL":[192,192,254],"ParotidR":[255,192,254],
-                 "SubmandibularR":[255,255,187],"SubmandibularL":[200,249,134],"BrachialPlexus":[255,255,128],"Larynx":[192,241,254],
-                 "CochleaL":[116,84,211],"CochleaR":[128,64,64]}
+    colordict = {"Brain":[0,0,198],"Brainstem":[251,216,151],"Spinal Cord":[12,191,243],"Parotid L":[192,192,254],"Parotid R":[255,192,254],
+                 "Submandibular R":[255,255,187],"Submandibular L":[200,249,134],"Brachial Plexus":[255,255,128],"Larynx":[192,241,254],
+                 "Cochlea L":[116,84,211],"Cochlea R":[128,64,64]}
     
-    ROInameconvert = {"BrachialPlexus":"Brachial Plexus","Brain":"Brain","CochleaL":"Cochlea L","CochleaR":"Cochlea R",
-                  "Larynx":"Larynx","ParotidL":"Parotid L","ParotidR":"Parotid R","SpinalCord":"Spinal Cord","BrainStem":"Brainstem",
-                  "SubmandibularL":"Submandibular L","SubmandibularR":"Submandibular R"}
+    #ROInameconvert = {"BrachialPlexus":"Brachial Plexus","Brain":"Brain","CochleaL":"Cochlea L","CochleaR":"Cochlea R",
+    #              "Larynx":"Larynx","ParotidL":"Parotid L","ParotidR":"Parotid R","SpinalCord":"Spinal Cord","BrainStem":"Brainstem",
+    #              "SubmandibularL":"Submandibular L","SubmandibularR":"Submandibular R"}
+    # the conversion dict above may not be needed, working on confirming
     
     # File meta info data elements
     file_meta = FileMetaDataset()
@@ -277,7 +278,7 @@ def create_dicom(patient_data, UIDdict, structuresetdata,image_size=256,threshol
         structure_set_roi = Dataset()
         structure_set_roi.ROINumber = i
         structure_set_roi.ReferencedFrameOfReferenceUID = patient_data["FrameOfReferenceUID"] #this is static, same for each element
-        structure_set_roi.ROIName = ROInameconvert[structuresetdata[i][0]]
+        structure_set_roi.ROIName = structuresetdata[i][0]
         structure_set_roi.ROIGenerationAlgorithm = 'AUTOMATIC'
         structure_set_roi_sequence.append(structure_set_roi)
     
@@ -286,8 +287,8 @@ def create_dicom(patient_data, UIDdict, structuresetdata,image_size=256,threshol
     roi_contour_sequence = Sequence()
     ds.ROIContourSequence = roi_contour_sequence
     
-    height_limits = {"BrainStem":27,"ParotidL":33,"ParotidR":33,"SubmandibularL":17,
-                     "SubmandibularR":17,"Larynx":18}
+    height_limits = {"Brainstem":27,"Parotid L":33,"Parotid R":33,"Submandibular L":17,
+                     "Submandibular R":17,"Larynx":18}
     #structuresetdata is list of lists, each element will be [name,3Darray,heightlist]
     for i in range(len(structuresetdata)):
         # ROI Contour Sequence: ROI Contour 1

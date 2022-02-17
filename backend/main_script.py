@@ -8,6 +8,8 @@ Created on Tue Oct 13 22:32:51 2020
 import os
 import numpy as np
 import datetime
+import pickle
+import threading
 
 import image_prep
 import model
@@ -23,6 +25,16 @@ INPUT RECEIVED FROM BROWSER:
     Folder with DICOM image files
 
 """
+
+def validate_files(input_folder,output_folder):
+    datalist = image_prep.get_list_of_datasets(input_folder)
+    inputarray, heightlist = image_prep.build_array(datalist, image_size=256,pixel_size=1)
+    np.save(os.path.join(output_folder,"patient_volume.npy"), inputarray)
+    with open(os.path.join(output_folder,"slice_height_map.pckl"),"wb+") as f:
+        pickle.dump(heightlist,f)
+    success_message = "All DICOM files have been processed and packaged into array. Ready to begin neural network inference process."
+    return success_message
+        
 
 
 def generate_ss(imagefolder,outputfolder,username):
