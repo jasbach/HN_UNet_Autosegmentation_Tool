@@ -1,3 +1,5 @@
+## NOTE: This application is under active development. Work in progress branches can be found in the repository. "main" branch will contain the most recent full release of the tool. The branch "BMC_RadOnc" will be preserved as the code was at the time of publication: https://ro-journal.biomedcentral.com/articles/10.1186/s13014-022-01982-y 
+
 # HN_UNet_Autosegmentation_Tool
  Accessible tool for using U-Net to run automatic segmentation on head and neck CT images for clinical use.
  
