@@ -3,7 +3,20 @@ import { CircularProgress } from '@mui/material';
 import TextareaAutosize from '@mui/base/TextareaAutosize';
 import axios from 'axios';
 import React, { useState } from 'react';
-import { saveAs } from 'file-saver';
+import { createTheme } from '@mui/material/styles';
+
+const theme = createTheme({
+    
+        palette: {
+          primary: {
+            main: '#76ff03',
+          },
+          secondary: {
+            main: '#1a237e',
+          },
+        },
+    
+})
 
 function AdvanceButton() {
     const [buttonMode,setButtonMode] = useState("Validate")

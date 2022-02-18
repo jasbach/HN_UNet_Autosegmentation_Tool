@@ -44,7 +44,7 @@ function UploadForm() {
         axios.get('http://localhost:5000/api/threads/create?threadtype=upload')
         .then((res) => {
             upload_thread_id = res.data
-            console.log(upload_thread_id)
+            console.log("Upload thread ID:" + upload_thread_id)
             interval_id = setInterval(progressUpdate, 100, upload_thread_id)
         }).then(() => {
             axios.post('http://localhost:5000/api/files?thread_id=' + upload_thread_id,
@@ -56,7 +56,7 @@ function UploadForm() {
             ).then((res) => {
                 console.log("Files successfully uploaded");
                 clearInterval(interval_id)
-            }).catch((err) => alert("Failed to upload"))
+            }).catch((err) => console.log("Failed to upload"))
             .then(() => {
                 setUploading(false)
                 updateFileCount()
@@ -75,7 +75,7 @@ function UploadForm() {
     return (
         <div className="uploadform">
             <form onSubmit={handleSubmit}>
-                <label>File Upload:
+                <label>File Upload:<br/>
                     <Input
                         id="DCMfiles" 
                         type="file" 
@@ -91,7 +91,8 @@ function UploadForm() {
             <p>
                 { uploading ? <LinearProgress variant="determinate" value={progress} /> : null}
                 Files staged: { DCMfiles.length }
-                <Button onClick={updateFileCount} size="small">REFRESH</Button>
+                <br/>
+                <Button onClick={updateFileCount} size="small">Update File Count</Button>
             </p>
         </div>
     )
